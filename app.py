@@ -13,7 +13,9 @@ from fpdf import FPDF
 import os  # yukarıya ekle (zaten varsa tekrar ekleme)
 from PIL import Image, ImageDraw, ImageFont
 import tempfile
+import pandas as pd
 import textwrap
+import openpyxl
 
 st.set_page_config(layout="wide")
 st.title("📚 Exam Coach Uygulaması")
@@ -53,24 +55,25 @@ for key in ["selected_question", "selected_answer", "show_question", "show_answe
         st.session_state[key] = None if "selected" in key else False
 
 # --- JSON Yükleme ---
-with st.expander("📂 JSON Anahtarını Yükle", expanded=True):
-    uploaded_json = st.file_uploader("Google Servis Hesabı JSON'unu yükleyin", type=["json","txt"])
-    if uploaded_json:
+with st.expander("📂 Servis Bilgisi Excel Yükle", expanded=True):
+    uploaded_excel = st.file_uploader("Google Servis Hesabı Excel dosyasını yükleyin", type=["xlsx"])
+    if uploaded_excel:
         try:
-            json_content = json.load(uploaded_json)
+            df = pd.read_excel(uploaded_excel)
+            row = df.iloc[0]
             st.session_state.service_info = {
-                "project_id": json_content.get("project_id", ""),
-                "private_key_id": json_content.get("private_key_id", ""),
-                "private_key": json_content.get("private_key", "").replace("\\n", "\n"),
-                "client_email": json_content.get("client_email", ""),
-                "client_id": json_content.get("client_id", ""),
-                "openai_api_key": json_content.get("OPEN_AI_KEY", ""),
-                "dersler": json_content.get("dersler", {})
+                "project_id": row["project_id"],
+                "private_key_id": row["private_key_id"],
+                "private_key": row["private_key"].replace("\\n", "\n"),
+                "client_email": row["client_email"],
+                "client_id": str(row["client_id"]),
+                "openai_api_key": row["OPEN_AI_KEY"],
+                "dersler": json.loads(row["dersler_json"])
             }
             st.session_state.openai_client = OpenAI(api_key=st.session_state.service_info["openai_api_key"])
-            st.success("JSON ve API Key yüklendi ✅")
+            st.success("Excel ve API Key yüklendi ✅")
         except Exception as e:
-            st.error(f"Yükleme hatası: {e}")
+            st.error(f"Excel'den veri okunamadı: {e}")
 
 # --- Google Drive'dan Dosya Çekme ---
 def load_drive_files(folder_id, key):
