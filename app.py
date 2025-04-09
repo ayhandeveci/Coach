@@ -56,7 +56,7 @@ for key in ["selected_question", "selected_answer", "show_question", "show_answe
 
 # --- JSON Yükleme ---
 with st.expander("📂 Servis Bilgisi Excel Yükle", expanded=True):
-    uploaded_excel = st.file_uploader("Google Servis Hesabı Excel dosyasını yükleyin", type=["xlsx"])
+    uploaded_excel = st.sidebar.file_uploader("Excel dosyası yükleyin", type=["xlsx", "xls"])
     if uploaded_excel:
         try:
             df = pd.read_excel(uploaded_excel)
