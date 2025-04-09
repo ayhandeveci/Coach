@@ -54,7 +54,7 @@ for key in ["selected_question", "selected_answer", "show_question", "show_answe
 
 # --- JSON Yükleme ---
 with st.expander("📂 JSON Anahtarını Yükle", expanded=True):
-    uploaded_json = st.file_uploader("Google Servis Hesabı JSON'unu yükleyin", type=["json"])
+    uploaded_json = st.file_uploader("Google Servis Hesabı JSON'unu yükleyin", type=["json","txt"])
     if uploaded_json:
         try:
             json_content = json.load(uploaded_json)
