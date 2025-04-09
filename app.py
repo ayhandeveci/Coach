@@ -57,9 +57,16 @@ for key in ["selected_question", "selected_answer", "show_question", "show_answe
 # --- JSON Yükleme ---
 with st.expander("📂 Servis Bilgisi Excel Yükle", expanded=True):
     uploaded_excel = st.sidebar.file_uploader("Excel dosyası yükleyin", type=["xlsx", "xls"])
+
     if uploaded_excel:
+        temp_excel_path = f"temp_{uploaded_excel.name}"
+
+        # Dosyayı geçici olarak kaydet
+        with open(temp_excel_path, "wb") as f:
+            f.write(uploaded_excel.getbuffer())
+
         try:
-            df = pd.read_excel(uploaded_excel)
+            df = pd.read_excel(temp_excel_path)
             row = df.iloc[0]
             st.session_state.service_info = {
                 "project_id": row["project_id"],
@@ -72,8 +79,15 @@ with st.expander("📂 Servis Bilgisi Excel Yükle", expanded=True):
             }
             st.session_state.openai_client = OpenAI(api_key=st.session_state.service_info["openai_api_key"])
             st.success("Excel ve API Key yüklendi ✅")
+
         except Exception as e:
             st.error(f"Excel'den veri okunamadı: {e}")
+
+        finally:
+            import atexit
+            import os
+            atexit.register(lambda: os.path.exists(temp_excel_path) and os.remove(temp_excel_path))
+
 
 # --- Google Drive'dan Dosya Çekme ---
 def load_drive_files(folder_id, key):
